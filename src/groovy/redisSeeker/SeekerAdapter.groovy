@@ -13,6 +13,7 @@ class SeekerAdapter {
   Seek seek
 
   def fields = [:]
+  def texts = [:]
   def shardFields = []
   def index
   def order
@@ -56,7 +57,9 @@ class SeekerAdapter {
     tags << tagName
   }
 
-
+  def text(field, value){
+    texts."$field" = value
+  }
 
   private validate(field, message){
     if (!field){
@@ -77,9 +80,13 @@ class SeekerAdapter {
     }
 
     if (tags)
-      search.tag((String[])tags.toArray())    
+      search.tag((String[])tags.toArray())
 
-    println "RANGE: [$from - $to]"
+    texts.each { k,v ->
+        search.text k,v
+    }
+
+    //println "RANGE: [$from - $to]"
     new ResultWrapper(result: search.run(cache, from, to, asc? Search.Order.ASC : Search.Order.DESC))
   }
 

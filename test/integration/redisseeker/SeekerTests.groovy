@@ -26,7 +26,7 @@ class SeekerTests extends GrailsUnitTestCase {
     super.tearDown()
 
     Jedis jedis = new Jedis("127.0.0.1")
-    //jedis.flushAll()
+    jedis.flushAll()
   }
 
   void insertItem(){
@@ -39,7 +39,7 @@ class SeekerTests extends GrailsUnitTestCase {
     entry.addField("seller_id", "2")
     entry.addField("status", "active")
     entry.addField("type", "normal")
-    entry.addText("title", "titulin")
+    entry.addText("title", "titulin de prueba")
     entry.addTag(TEST_TAG)
 
     entry.addOrder("start_time", System.currentTimeMillis() as Double)
@@ -141,6 +141,20 @@ class SeekerTests extends GrailsUnitTestCase {
       order "start_time"
       shard "seller_id", "2"
       field "status", "active"
+      tag TEST_TAG
+    }
+    assert items.find { it == "123" } != null
+  }
+
+  void testSearchWithText(){
+    insertItem()
+
+    def items = seeker.list {
+      'index' "items"
+      order "start_time"
+      shard "seller_id", "2"
+      field "status", "active"
+      text "title", "titulin"
       tag TEST_TAG
     }
     assert items.find { it == "123" } != null
