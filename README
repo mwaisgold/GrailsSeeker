@@ -31,3 +31,10 @@ results.result.time
 results.each {
   println "$it" //it = each ID
 }
+
+Other list options:
+
+field "FIELD_NAME", "VALUE_1", "VALUE_2", ... , "VALUE_N" //Or between field
+from 1 //Pagination from (starts in 0)
+to 3 //Pagination to
+cache 10 //Cache time

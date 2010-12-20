@@ -30,7 +30,11 @@ class SeekerTests extends GrailsUnitTestCase {
   }
 
   void insertItem(){
-    Entry entry = index.add("123")
+    insertItem("123")
+  }
+
+  void insertItem(id){
+    Entry entry = index.add(id)
     entry.shardBy "seller_id"
     entry.addField("seller_id", "2")
     entry.addField("status", "active")
@@ -41,9 +45,6 @@ class SeekerTests extends GrailsUnitTestCase {
     entry.addOrder("start_time", System.currentTimeMillis() as Double)
 
     entry.save()
-    println "Item saved"
-
-
 
   }
 
@@ -55,10 +56,6 @@ class SeekerTests extends GrailsUnitTestCase {
       order "start_time"
       shard "seller_id", "2"
       field "status", "active"
-    }
-
-    items.each {
-      println "******** Item: $it"
     }
 
     assert items.find { it == "123" } != null
@@ -133,10 +130,6 @@ class SeekerTests extends GrailsUnitTestCase {
       field "type", "normal"
     }
 
-    items.each {
-      println "******** Item: $it"
-    }
-
     assert items.find { it == "123" } != null
   }
 
@@ -150,11 +143,67 @@ class SeekerTests extends GrailsUnitTestCase {
       field "status", "active"
       tag TEST_TAG
     }
-
-    items.each {
-      println "******** Item: $it"
-    }
-
     assert items.find { it == "123" } != null
   }
+
+  void testSearchWithMultipleField(){
+    insertItem()
+
+    def items = seeker.list {
+      'index' "items"
+      order "start_time"
+      shard "seller_id", "2"
+      field "status", "active", "closed"
+      tag TEST_TAG
+    }
+    assert items.find { it == "123" } != null
+  }
+
+  void testSearchItemsWithDifferentOrders() {
+    insertItem()
+    insertItem("1234")
+
+    def items = seeker.list {
+      'index' "items"
+      order "start_time"
+      shard "seller_id", "2"
+      field "status", "active", "closed"
+      tag TEST_TAG
+    }
+
+    assert items[0] == "123"
+    assert items[1] == "1234"
+
+    items = seeker.list {
+      'index' "items"
+      order "start_time", "desc"
+      shard "seller_id", "2"
+      field "status", "active", "closed"
+      tag TEST_TAG
+    }
+
+    assert items[1] == "123"
+    assert items[0] == "1234"
+
+  }
+
+  void testSearchWithSimplePagination(){
+    insertItem()
+    insertItem("1234")
+
+    def items = seeker.list {
+      'index' "items"
+      order "start_time"
+      shard "seller_id", "2"
+      field "status", "active", "closed"
+      tag TEST_TAG
+      from 1
+      to 1
+    }
+
+    assertEquals 2, items.result.totalCount
+    assertEquals "1234", items[0]
+    assertEquals 1, items.result.getIds().size()
+  }
+
 }

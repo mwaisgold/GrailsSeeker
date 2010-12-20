@@ -14,4 +14,8 @@ class ResultWrapper implements Iterable{
   Iterator iterator() {
     result.getIds().iterator()
   }
+
+  def getAt(index){
+    result.getIds()[index]
+  }
 }
