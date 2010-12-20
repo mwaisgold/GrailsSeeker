@@ -1,0 +1,33 @@
+
+This is a Grails pluggin to support @xetorthio seek plugin.
+
+To configure you must do:
+In your resources file add
+redisSeeker(RedisSeeker){
+  servers = ["127.0.0.1","localhost"]
+  port = 6397 //Default: 6397
+  maxActiveConnections = 10 //Default: 5
+  minIdleConnections = 10 //Default: 5
+}
+
+Then with your RedisSeeker instance you can:
+
+def results = redisSeeker.list {
+  index "INDEX_NAME" //Mandatory
+  order "ORDER" //Mandatory
+  order "ORDER", "asc/desc"
+  shard "SHARD_FIELD", "VALUE" //Mandatory
+  field "FIELD_NAME", "FIELD_VALUE" //At least one field
+  tag "TAG_NAME"
+}
+
+//Total results
+results.result.totalCount
+
+//Time spent
+results.result.time
+
+//Iterate over results
+results.each {
+  println "$it" //it = each ID
+}
