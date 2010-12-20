@@ -11,6 +11,7 @@ class SeekerTests extends GrailsUnitTestCase {
   def index
 
   static INDEX_NAME = "items"
+  static TEST_TAG = "tagged"
 
   protected void setUp() {
     super.setUp()
@@ -25,7 +26,7 @@ class SeekerTests extends GrailsUnitTestCase {
     super.tearDown()
 
     Jedis jedis = new Jedis("127.0.0.1")
-    jedis.flushAll()
+    //jedis.flushAll()
   }
 
   void insertItem(){
@@ -35,6 +36,7 @@ class SeekerTests extends GrailsUnitTestCase {
     entry.addField("status", "active")
     entry.addField("type", "normal")
     entry.addText("title", "titulin")
+    entry.addTag(TEST_TAG)
 
     entry.addOrder("start_time", System.currentTimeMillis() as Double)
 
@@ -127,6 +129,24 @@ class SeekerTests extends GrailsUnitTestCase {
       shard "seller_id", "2"
       field "status", "active"
       field "type", "normal"
+    }
+
+    items.each {
+      println "******** Item: $it"
+    }
+
+    assert items.find { it == "123" } != null
+  }
+
+  void testSearchWithTag(){
+    insertItem()
+
+    def items = seeker.list {
+      'index' "items"
+      order "start_time"
+      shard "seller_id", "2"
+      field "status", "active"
+      tag TEST_TAG
     }
 
     items.each {

@@ -16,6 +16,7 @@ class SeekerAdapter {
   def shardField
   def index
   def order
+  def tags = []
 
   def cache = 0;
   def from = 0
@@ -49,6 +50,10 @@ class SeekerAdapter {
     this.to = to
   }
 
+  def tag(tagName){
+    tags << tagName
+  }
+
   private validate(field, message){
     if (!field){
       throw new IllegalStateException(message)
@@ -66,6 +71,9 @@ class SeekerAdapter {
     fields.each { k,v ->
       search.field k, v
     }
+
+    if (tags)
+      search.tag((String[])tags.toArray())    
 
     new ResultWrapper(result: search.run(cache, from, to))
   }
