@@ -43,6 +43,8 @@ class SeekerTests extends GrailsUnitTestCase {
     entry.save()
     println "Item saved"
 
+
+
   }
 
   void testSimpleSearch() {

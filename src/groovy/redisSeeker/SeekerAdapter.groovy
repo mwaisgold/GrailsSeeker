@@ -21,6 +21,7 @@ class SeekerAdapter {
   def cache = 0;
   def from = 0
   def to = 49
+  def asc = true
 
   def field(name, String... values){
     fields."$name" = values
@@ -34,8 +35,9 @@ class SeekerAdapter {
     this.index = name
   }
 
-  def order(name){
+  def order(name, asc = "asc"){
     this.order = name
+    this.asc = asc == "asc"
   }
 
   def cache(time){
@@ -53,6 +55,8 @@ class SeekerAdapter {
   def tag(tagName){
     tags << tagName
   }
+
+
 
   private validate(field, message){
     if (!field){
@@ -75,7 +79,7 @@ class SeekerAdapter {
     if (tags)
       search.tag((String[])tags.toArray())    
 
-    new ResultWrapper(result: search.run(cache, from, to))
+    new ResultWrapper(result: search.run(cache, from, to, asc? Search.Order.ASC : Search.Order.DESC))
   }
 
 }
