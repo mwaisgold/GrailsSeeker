@@ -25,7 +25,7 @@ class RedisSeeker {
 
     def shards = servers.collect { new JedisShardInfo( it, port ) }
     Config config = new Config()
-    config.testOnBorrow = false
+    config.testOnBorrow = true
     config.testOnReturn = true
     config.maxActive = maxActiveConnections
     config.minIdle = minIdleConnections
@@ -37,14 +37,26 @@ class RedisSeeker {
 
 
   def list(Closure c){
-
-
     def intSeeker = new SeekerAdapter(seek: seek)
     c.delegate = intSeeker
     c.resolveStrategy = Closure.DELEGATE_FIRST
     c()
     
     intSeeker.search()
-  }  
+  }
+
+  def index(name){
+      seek.index(name)
+  }
+
+  def save(index, stopWords, Closure c){
+      def saver = new SeekerAdapter(seek: seek)
+      c.delegate = saver
+      c.resolveStrategy = Closure.DELEGATE_FIRST
+      c()
+
+      saver.save(index, stopWords)
+
+  }
 
 }
