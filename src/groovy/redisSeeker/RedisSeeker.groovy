@@ -45,7 +45,16 @@ class RedisSeeker {
 
         intSeeker.search()
     }
-
+    
+    def info(Closure c) {
+	def intSeeker = new SeekerAdapter(seek: seek)
+	c.delegate = intSeeker
+	c.resolveStrategy = Closure.DELEGATE_FIRST
+	c()
+	
+	intSeeker.info()
+    }
+    
     def index(name) {
         indexes."$name" ?: seek.index(name)        
     }

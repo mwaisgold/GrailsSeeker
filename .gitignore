@@ -21,3 +21,4 @@ test/integration/syi/api/RestClientsTests.groovy
 *.orig
 web-app/css/
 web-app/js/
+/plugin.xml

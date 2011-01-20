@@ -3,6 +3,7 @@ package redisseeker
 import grails.test.*
 import redisSeeker.RedisSeeker
 import redis.seek.Entry
+import redis.seek.Info;
 import redis.clients.jedis.Jedis
 
 class SeekerTests extends GrailsUnitTestCase {
@@ -33,14 +34,16 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem("123")
   }
 
-  void insertItem(id){
+  void insertItem(id, tags=[TEST_TAG]){
     Entry entry = index.add(id)
     entry.shardBy "seller_id"
     entry.addField("seller_id", "2")
     entry.addField("status", "active")
     entry.addField("type", "normal")
     entry.addText("title", "titulin de prueba")
-    entry.addTag(TEST_TAG)
+    tags.each {
+	    entry.addTag(it)
+	     }
 
     entry.addOrder("start_time", System.currentTimeMillis() as Double)
 
@@ -146,20 +149,45 @@ class SeekerTests extends GrailsUnitTestCase {
     assert items.find { it == "123" } != null
   }
 
-  void testSearchWithText(){
-    insertItem()
+  void testFacets(){
+    insertItem("123")
+    insertItem("124",["tagged", "copado"])
+    insertItem("125",["tagged", "copado"])
 
-    def items = seeker.list {
+    Info<String, Info<?,?>> info = seeker.info {
       'index' "items"
-      order "start_time"
       shard "seller_id", "2"
-      field "status", "active"
-      text "title", "titulin"
-      tag TEST_TAG
     }
-    assert items.find { it == "123" } != null
+    
+    println info
+    assert info.total()==3
+    assert info.status.total()==3
+    assert info.status.active==3
+    /** 
+     * El total de tags no tiene mucho sentido porque muestra el acumulado de 
+     *  todos los tags y una misma entrada puede tener más de un tag, eso haría 
+     *  que se cuente 2 veces
+     */
+    assert info.tags.total()==5 
+    
+    assert info.tags.tagged==3
+    assert info.tags.copado==2    
   }
 
+  void testSearchWithText(){
+      insertItem()
+      
+      def items = seeker.list {
+	  'index' "items"
+	  order "start_time"
+	  shard "seller_id", "2"
+	  field "status", "active"
+	  text "title", "titulin"
+	  tag TEST_TAG
+      }
+      assert items.find { it == "123" } != null
+  }
+  
   void testSearchWithMultipleField(){
     insertItem()
 

@@ -129,6 +129,12 @@ class SeekerAdapter {
         }
 
         e.save()
-
+    }
+    
+    def info() {
+	validate(index, "You must provide an index to search in")
+	validate(shardFields, "You must provide a shard field and it's value")
+    	
+	seek.info index, shardFields as ShardField[]
     }
 }
