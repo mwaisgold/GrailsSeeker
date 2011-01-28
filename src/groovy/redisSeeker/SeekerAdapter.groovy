@@ -1,7 +1,6 @@
 package redisSeeker
 
 import redis.seek.Seek
-import redis.seek.ShardField
 import redis.seek.Search
 import redis.seek.Entry
 
@@ -17,7 +16,7 @@ class SeekerAdapter {
     def fields = [:]
     def texts = [:]
     def shardFields = []
-    def index
+    //def index
     def order
     def tags = []
 
@@ -34,13 +33,13 @@ class SeekerAdapter {
         fields."$name" = values
     }
 
-    def shard(name, value) {
-        shardFields << new ShardField(name, value)
+    def shard(value) {
+        shardFields << value
     }
 
-    def index(name) {
-        this.index = name
-    }
+//    def index(name) {
+//        this.index = name
+//    }
 
     def order(name, asc = "asc") {
         this.order = name
@@ -78,13 +77,13 @@ class SeekerAdapter {
     }
 
     def search() {
-        validate(index, "You must provide an index to search in")
+        //validate(index, "You must provide an index to search in")
         validate(order, "You must provide an order to search")
         validate(shardFields, "You must provide a shard field and it's value")
         validate(fields, "You must send fields to search with")
         validate(to >= from, "To must be greater than from")
 
-        Search search = seek.search(index, order, (ShardField[]) shardFields.toArray())
+        Search search = seek.search((String[]) shardFields.toArray())
         fields.each { k, v ->
             search.field k, v
         }
@@ -102,7 +101,7 @@ class SeekerAdapter {
 
     def save(index, stopWords) {
         validate(id, "You must provide an id for the new entry")
-        validate(shardFields, "You must provide a shard field and it's value")
+        validate(shardFields, "You must provide at least uno shard field value")
         validate(fields, "You must send fields to the new entry")
         validate(order, "You must provide an order")
 
@@ -132,9 +131,9 @@ class SeekerAdapter {
     }
     
     def info() {
-	validate(index, "You must provide an index to search in")
-	validate(shardFields, "You must provide a shard field and it's value")
+	    //validate(index, "You must provide an index to search in")
+	    validate(shardFields, "You must provide at least uno shard field value")
     	
-	seek.info index, shardFields as ShardField[]
+	    seek.info shardFields as String[]
     }
 }

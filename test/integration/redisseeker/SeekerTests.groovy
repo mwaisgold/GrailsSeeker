@@ -9,7 +9,6 @@ import redis.clients.jedis.Jedis
 class SeekerTests extends GrailsUnitTestCase {
 
   def seeker
-  def index
 
   static INDEX_NAME = "items"
   static TEST_TAG = "tagged"
@@ -19,7 +18,7 @@ class SeekerTests extends GrailsUnitTestCase {
     seeker = new RedisSeeker(servers: ["127.0.0.1"])
     seeker.init()
 
-    index = seeker.seek.index(INDEX_NAME)
+    //index = seeker.seek.index(INDEX_NAME)
 
   }
 
@@ -35,7 +34,7 @@ class SeekerTests extends GrailsUnitTestCase {
   }
 
   void insertItem(id, tags=[TEST_TAG]){
-    Entry entry = index.add(id)
+    Entry entry = seeker.seek.add(id, System.currentTimeMillis() as Double)
     entry.shardBy "seller_id"
     entry.addField("seller_id", "2")
     entry.addField("status", "active")
@@ -45,7 +44,7 @@ class SeekerTests extends GrailsUnitTestCase {
 	    entry.addTag(it)
 	     }
 
-    entry.addOrder("start_time", System.currentTimeMillis() as Double)
+//    entry.addOrder("start_time", System.currentTimeMillis() as Double)
 
     entry.save()
 
@@ -55,9 +54,9 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem()
 
     def items = seeker.list {
-      'index' "items"
+      //'index' "items"
       order "start_time"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active"
     }
 
@@ -74,25 +73,25 @@ class SeekerTests extends GrailsUnitTestCase {
     }
   }
 
-  void testSearchWithoutIndexShouldThrowException(){
-    insertItem()
-
-    assertThrowException({
-      def items = seeker.list {
-        order "start_time"
-        shard "seller_id", "2"
-        field "status", "active"
-      }
-    }, IllegalStateException)
-  }
+//  void testSearchWithoutIndexShouldThrowException(){
+//    insertItem()
+//
+//    assertThrowException({
+//      def items = seeker.list {
+//        order "start_time"
+//        shard "seller_id", "2"
+//        field "status", "active"
+//      }
+//    }, IllegalStateException)
+//  }
 
   void testSearchWithoutOrderShouldThrowException(){
     insertItem()
 
     assertThrowException({
       def items = seeker.list {
-        'index' "items"
-        shard "seller_id", "2"
+        //'index' "items"
+        shard "2"
         field "status", "active"
       }
     }, IllegalStateException)
@@ -103,7 +102,7 @@ class SeekerTests extends GrailsUnitTestCase {
 
     assertThrowException({
       def items = seeker.list {
-        'index' "items"
+        //'index' "items"
         order "start_time"
         field "status", "active"
       }
@@ -115,9 +114,9 @@ class SeekerTests extends GrailsUnitTestCase {
 
     assertThrowException({
       def items = seeker.list {
-        'index' "items"
+        //'index' "items"
         order "start_time"
-        shard "seller_id", "2"
+        shard "2"
       }
     }, IllegalStateException)
   }
@@ -126,9 +125,9 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem()
 
     def items = seeker.list {
-      'index' "items"
+      //'index' "items"
       order "start_time"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active"
       field "type", "normal"
     }
@@ -140,9 +139,9 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem()
 
     def items = seeker.list {
-      'index' "items"
+      //'index' "items"
       order "start_time"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active"
       tag TEST_TAG
     }
@@ -155,8 +154,8 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem("125",["tagged", "copado"])
 
     Info<String, Info<?,?>> info = seeker.info {
-      'index' "items"
-      shard "seller_id", "2"
+      //'index' "items"
+      shard "2"
     }
     
     println info
@@ -169,21 +168,21 @@ class SeekerTests extends GrailsUnitTestCase {
      *  que se cuente 2 veces
      */
     assert info.tags.total()==5 
-    
+
     assert info.tags.tagged==3
-    assert info.tags.copado==2    
+    assert info.tags.copado==2
   }
 
   void testSearchWithText(){
       insertItem()
       
       def items = seeker.list {
-	  'index' "items"
-	  order "start_time"
-	  shard "seller_id", "2"
-	  field "status", "active"
-	  text "title", "titulin"
-	  tag TEST_TAG
+	  //'index' "items"
+          order "start_time"
+          shard "2"
+          field "status", "active"
+          text "title", "titulin"
+          tag TEST_TAG
       }
       assert items.find { it == "123" } != null
   }
@@ -192,9 +191,9 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem()
 
     def items = seeker.list {
-      'index' "items"
+      //'index' "items"
       order "start_time"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active", "closed"
       tag TEST_TAG
     }
@@ -206,9 +205,9 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem("1234")
 
     def items = seeker.list {
-      'index' "items"
+      //'index' "items"
       order "start_time"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active", "closed"
       tag TEST_TAG
     }
@@ -217,9 +216,9 @@ class SeekerTests extends GrailsUnitTestCase {
     assert items[1] == "1234"
 
     items = seeker.list {
-      'index' "items"
+//      'index' "items"
       order "start_time", "desc"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active", "closed"
       tag TEST_TAG
     }
@@ -234,9 +233,9 @@ class SeekerTests extends GrailsUnitTestCase {
     insertItem("1234")
 
     def items = seeker.list {
-      'index' "items"
+//      'index' "items"
       order "start_time"
-      shard "seller_id", "2"
+      shard "2"
       field "status", "active", "closed"
       tag TEST_TAG
       from 1
