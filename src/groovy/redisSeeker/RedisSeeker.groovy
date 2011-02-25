@@ -15,6 +15,8 @@ class RedisSeeker {
     def maxActiveConnections = 5
     def minIdleConnections = 5
     def port = 6379
+    def testOnBorrow = true
+    def testOnReturn = true
 
     Seek seek
     def indexes = [:]
@@ -24,10 +26,17 @@ class RedisSeeker {
             throw new IllegalStateException("No servers for redis seeker")
         }
 
-        def shards = servers.collect { new JedisShardInfo(it, port) }
+        def shards = servers.collect {
+            def split = it.split(":")
+            if (split.size() == 1)
+                new JedisShardInfo(it, port)
+            else
+                new JedisShardInfo(split[0], split[1] as Integer)
+        }
+
         Config config = new Config()
-        config.testOnBorrow = true
-        config.testOnReturn = true
+        config.testOnBorrow = testOnBorrow
+        config.testOnReturn = testOnReturn
         config.maxActive = maxActiveConnections
         config.minIdle = minIdleConnections
 
